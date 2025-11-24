@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ArConfigService, ARTarget } from '../../services/ar-config.service';
+import { Camera } from '@capacitor/camera';
+
 @Component({
   selector: 'app-ar-viewer',
   templateUrl: './ar-viewer.page.html',
   styleUrls: ['./ar-viewer.page.scss'],
-  standalone: false,
+  standalone: false
 })
 export class ArViewerPage implements OnInit {
   arSceneUrl: SafeResourceUrl | null = null;
@@ -17,7 +19,10 @@ export class ArViewerPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    // ✅ Solicitar permiso de cámara ANTES de cargar AR
+    await this.requestCameraPermission();
+    
     const target = this.arConfig.getCurrentTarget();
     
     if (!target) {
@@ -26,17 +31,25 @@ export class ArViewerPage implements OnInit {
       return;
     }
 
-    // Generar HTML dinámicamente
     const htmlContent = this.generateARScene(target);
     const blob = new Blob([htmlContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     this.arSceneUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
+  // ✅ NUEVO: Solicitar permiso de cámara
+  async requestCameraPermission() {
+    try {
+      const permission = await Camera.requestPermissions();
+      console.log('Camera permission:', permission);
+    } catch (error) {
+      console.error('Error requesting camera permission:', error);
+    }
+  }
+
   private generateARScene(target: ARTarget): string {
     let markerContent = '';
 
-    // Generar contenido según tipo
     if (target.content.type === 'primitive') {
       const animations = target.content.primitive === 'box' 
         ? 'animation="property: rotation; to: 0 405 0; loop: true; dur: 10000; easing: linear"'
@@ -61,7 +74,6 @@ export class ArViewerPage implements OnInit {
       `;
     }
 
-    // Generar marcador
     const markerElement = target.preset 
       ? `<a-marker preset="${target.preset}">`
       : `<a-marker type="pattern" url="${target.url}">`;
@@ -71,7 +83,7 @@ export class ArViewerPage implements OnInit {
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>AR Scene</title>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
@@ -95,8 +107,9 @@ export class ArViewerPage implements OnInit {
   
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    vr-mode-ui="enabled: false">
+    arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;"
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; precision: medium;">
     
     ${markerElement}
       ${markerContent}
@@ -106,11 +119,17 @@ export class ArViewerPage implements OnInit {
   </a-scene>
 
   <script>
+    // Esperar a que todo cargue
     window.addEventListener('load', function() {
       setTimeout(() => {
         const loader = document.querySelector('.arjs-loader');
         if (loader) loader.style.display = 'none';
-      }, 2000);
+      }, 3000);
+    });
+
+    // Manejar errores de cámara
+    window.addEventListener('error', function(e) {
+      console.error('AR Scene Error:', e);
     });
   </script>
 </body>
