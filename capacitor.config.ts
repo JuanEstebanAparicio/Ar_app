@@ -1,18 +1,23 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter', // Cambia esto por tu ID único
-  appName: 'ar-taller',
+  appId: 'io.ionic.artaller',
+  appName: 'AR.js Taller',
   webDir: 'www',
   server: {
     androidScheme: 'https',
-    allowNavigation: ['*'], // ✅ IMPORTANTE para AR.js
+    allowNavigation: ['*'],
     cleartext: true
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true
   },
   plugins: {
     Camera: {
-      iosPermissions: {
-        cameraUsageDescription: 'Esta app necesita acceso a la cámara para AR'
+      android: {
+        permissions: ['camera']
       }
     }
   }
