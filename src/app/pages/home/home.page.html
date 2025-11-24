@@ -1,44 +1,98 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>AR.js Taller</ion-title>
+    <ion-title>AR.js Taller - 3er Corte</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <div class="container">
     <h1>Realidad Aumentada</h1>
-    <p>Escanea un marcador HIRO para ver contenido AR</p>
+    <p>Selecciona un marcador y contenido para visualizar</p>
     
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Instrucciones</ion-card-title>
+        <ion-card-title>Selecciona experiencia AR</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ol>
-          <li>Presiona el botón "Iniciar AR"</li>
-          <li>Permite el acceso a la cámara</li>
-          <li>Apunta a un marcador HIRO</li>
-          <li>Observa el modelo 3D aparecer</li>
-        </ol>
+        <ion-list>
+          <ion-radio-group [(ngModel)]="selectedTarget">
+            <ion-item>
+              <ion-label>
+                <h2>HIRO - Cubo Animado</h2>
+                <p>Marcador HIRO con cubo 3D rotando</p>
+              </ion-label>
+              <ion-radio slot="start" value="hiro-box"></ion-radio>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label>
+                <h2>HIRO - Modelo T-Rex</h2>
+                <p>Marcador HIRO con modelo 3D</p>
+              </ion-label>
+              <ion-radio slot="start" value="hiro-model"></ion-radio>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label>
+                <h2>KANJI - Esfera</h2>
+                <p>Marcador KANJI con esfera roja</p>
+              </ion-label>
+              <ion-radio slot="start" value="kanji-sphere"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </ion-list>
       </ion-card-content>
     </ion-card>
 
-    <ion-button expand="block" (click)="openAR()" size="large">
+    <ion-button 
+      expand="block" 
+      (click)="openAR()" 
+      size="large"
+      [disabled]="!selectedTarget">
       <ion-icon slot="start" name="scan"></ion-icon>
       Iniciar AR
     </ion-button>
 
     <ion-card>
       <ion-card-header>
-        <ion-card-subtitle>Marcador HIRO</ion-card-subtitle>
+        <ion-card-subtitle>Marcadores disponibles</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <p>Descarga e imprime este marcador:</p>
-        <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank">
-          <ion-button fill="outline" size="small">
-            Descargar Marcador
-          </ion-button>
-        </a>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <h3>HIRO</h3>
+              <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank">
+                <ion-button fill="outline" size="small" expand="block">
+                  Descargar
+                </ion-button>
+              </a>
+            </ion-col>
+            <ion-col size="6">
+              <h3>KANJI</h3>
+              <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/kanji.png" target="_blank">
+                <ion-button fill="outline" size="small" expand="block">
+                  Descargar
+                </ion-button>
+              </a>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Instrucciones</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ol>
+          <li>Descarga e imprime un marcador</li>
+          <li>Selecciona una experiencia AR</li>
+          <li>Presiona "Iniciar AR"</li>
+          <li>Permite el acceso a la cámara</li>
+          <li>Apunta al marcador impreso</li>
+        </ol>
       </ion-card-content>
     </ion-card>
   </div>

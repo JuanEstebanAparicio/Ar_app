@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { ArConfigService } from '../../services/ar-config.service';
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -7,11 +9,17 @@ import { Router } from '@angular/router';
   standalone: false,
 })
 export class HomePage {
-
-  constructor(private router: Router) {}
+ selectedTarget: string = 'hiro-box';
+  constructor(
+    private router: Router,
+    private arConfig: ArConfigService
+  ) {}
 
 
   openAR() {
-    this.router.navigate(['/ar-viewer']);
+    if (this.selectedTarget) {
+      this.arConfig.setCurrentTarget(this.selectedTarget);
+      this.router.navigate(['/ar-viewer']);
+    }
   }
 }
