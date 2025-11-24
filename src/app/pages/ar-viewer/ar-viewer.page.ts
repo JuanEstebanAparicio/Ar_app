@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ArConfigService, ARTarget } from '../../services/ar-config.service';
 import { Camera } from '@capacitor/camera';
+import { AlertController } from '@ionic/angular';
+
+declare var AFRAME: any;
 
 @Component({
   selector: 'app-ar-viewer',
@@ -10,19 +12,25 @@ import { Camera } from '@capacitor/camera';
   styleUrls: ['./ar-viewer.page.scss'],
   standalone: false
 })
-export class ArViewerPage implements OnInit {
-  arSceneUrl: SafeResourceUrl | null = null;
-
+export class ArViewerPage implements OnInit, AfterViewInit {
+  @ViewChild('arContainer', { static: false }) arContainer!: ElementRef;
+  private scriptsLoaded = false;
+  
   constructor(
-    private sanitizer: DomSanitizer,
     private arConfig: ArConfigService,
-    private router: Router
+    private router: Router,
+    private alertController: AlertController
   ) {}
 
   async ngOnInit() {
-    // ✅ Solicitar permiso de cámara ANTES de cargar AR
-    await this.requestCameraPermission();
-    
+    const hasPermission = await this.requestCameraPermission();
+    if (!hasPermission) {
+      await this.showPermissionAlert();
+      this.router.navigate(['/home']);
+    }
+  }
+
+  ngAfterViewInit() {
     const target = this.arConfig.getCurrentTarget();
     
     if (!target) {
@@ -31,109 +39,165 @@ export class ArViewerPage implements OnInit {
       return;
     }
 
-    const htmlContent = this.generateARScene(target);
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    this.arSceneUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.loadARScene(target);
   }
 
-  // ✅ NUEVO: Solicitar permiso de cámara
-  async requestCameraPermission() {
+  async requestCameraPermission(): Promise<boolean> {
     try {
       const permission = await Camera.requestPermissions();
-      console.log('Camera permission:', permission);
+      console.log('Camera permission status:', permission);
+      return permission.camera === 'granted';
     } catch (error) {
       console.error('Error requesting camera permission:', error);
+      return false;
     }
   }
 
-  private generateARScene(target: ARTarget): string {
-    let markerContent = '';
+  async showPermissionAlert() {
+    const alert = await this.alertController.create({
+      header: 'Permiso de Cámara Requerido',
+      message: 'Esta aplicación necesita acceso a la cámara para mostrar realidad aumentada. Por favor, habilita el permiso en la configuración de tu dispositivo.',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Ir a Configuración',
+          handler: () => {
+            // El usuario puede ir manualmente a configuración
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
 
-    if (target.content.type === 'primitive') {
-      const animations = target.content.primitive === 'box' 
-        ? 'animation="property: rotation; to: 0 405 0; loop: true; dur: 10000; easing: linear"'
-        : '';
-      
-      markerContent = `
-        <a-${target.content.primitive}
-          position="${target.content.position}"
-          color="${target.content.color}"
-          scale="${target.content.scale}"
-          rotation="${target.content.rotation}"
-          ${animations}>
-        </a-${target.content.primitive}>
-      `;
-    } else if (target.content.type === '3d-model') {
-      markerContent = `
-        <a-entity
-          gltf-model="${target.content.src}"
-          scale="${target.content.scale}"
-          position="${target.content.position}">
-        </a-entity>
-      `;
+  loadARScene(target: ARTarget) {
+    if (this.scriptsLoaded) {
+      this.createARScene(target);
+      return;
     }
 
-    const markerElement = target.preset 
-      ? `<a-marker preset="${target.preset}">`
-      : `<a-marker type="pattern" url="${target.url}">`;
+    // Cargar scripts de A-Frame y AR.js
+    this.loadScript('https://aframe.io/releases/1.6.0/aframe.min.js')
+      .then(() => {
+        console.log('A-Frame loaded');
+        return this.loadScript('https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js');
+      })
+      .then(() => {
+        console.log('AR.js loaded');
+        this.scriptsLoaded = true;
+        // Esperar un poco para que los scripts se inicialicen
+        setTimeout(() => {
+          this.createARScene(target);
+        }, 500);
+      })
+      .catch((error) => {
+        console.error('Error loading AR scripts:', error);
+        this.showErrorAlert('Error al cargar librerías de AR');
+      });
+  }
 
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>AR Scene</title>
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    .arjs-loader {
-      height: 100%; width: 100%; position: absolute;
-      top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8);
-      z-index: 9999; display: flex;
-      justify-content: center; align-items: center;
-    }
-    .arjs-loader div {
-      text-align: center; font-size: 1.25em; color: white;
-    }
-  </style>
-</head>
-<body>
-  <div class="arjs-loader">
-    <div>Cargando AR, espere...</div>
-  </div>
-  
-  <a-scene
-    embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;"
-    vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; precision: medium;">
-    
-    ${markerElement}
-      ${markerContent}
-    </a-marker>
-    
-    <a-entity camera></a-entity>
-  </a-scene>
+  loadScript(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Verificar si el script ya está cargado
+      const existingScript = document.querySelector(`script[src="${url}"]`);
+      if (existingScript) {
+        resolve();
+        return;
+      }
 
-  <script>
-    // Esperar a que todo cargue
-    window.addEventListener('load', function() {
+      const script = document.createElement('script');
+      script.src = url;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load: ${url}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  createARScene(target: ARTarget) {
+    const container = this.arContainer.nativeElement;
+    container.innerHTML = ''; // Limpiar contenido previo
+
+    // Crear loading overlay
+    const loader = document.createElement('div');
+    loader.className = 'ar-loader';
+    loader.innerHTML = '<div>Iniciando cámara...</div>';
+    container.appendChild(loader);
+
+    try {
+      // Crear escena A-Frame
+      const scene = document.createElement('a-scene');
+      scene.setAttribute('embedded', '');
+      scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; videoTexture: true;');
+      scene.setAttribute('vr-mode-ui', 'enabled: false');
+      scene.setAttribute('renderer', 'logarithmicDepthBuffer: true; precision: medium;');
+
+      // Crear marcador
+      const marker = document.createElement('a-marker');
+      if (target.preset) {
+        marker.setAttribute('preset', target.preset);
+      }
+
+      // Crear contenido según tipo
+      if (target.content.type === 'primitive') {
+        const primitive = document.createElement(`a-${target.content.primitive}`);
+        primitive.setAttribute('position', target.content.position || '0 0.5 0');
+        primitive.setAttribute('color', target.content.color || '#4CC3D9');
+        primitive.setAttribute('scale', target.content.scale || '1 1 1');
+        primitive.setAttribute('rotation', target.content.rotation || '0 0 0');
+        
+        if (target.content.primitive === 'box') {
+          primitive.setAttribute('animation', 'property: rotation; to: 0 405 0; loop: true; dur: 10000; easing: linear');
+        }
+        
+        marker.appendChild(primitive);
+      } else if (target.content.type === '3d-model') {
+        const entity = document.createElement('a-entity');
+        entity.setAttribute('gltf-model', target.content.src || '');
+        entity.setAttribute('scale', target.content.scale || '1 1 1');
+        entity.setAttribute('position', target.content.position || '0 0 0');
+        marker.appendChild(entity);
+      }
+
+      // Crear cámara
+      const camera = document.createElement('a-entity');
+      camera.setAttribute('camera', '');
+
+      // Agregar elementos a la escena
+      scene.appendChild(marker);
+      scene.appendChild(camera);
+      container.appendChild(scene);
+
+      // Ocultar loader después de 3 segundos
       setTimeout(() => {
-        const loader = document.querySelector('.arjs-loader');
-        if (loader) loader.style.display = 'none';
+        if (loader && loader.parentNode) {
+          loader.style.display = 'none';
+        }
       }, 3000);
-    });
 
-    // Manejar errores de cámara
-    window.addEventListener('error', function(e) {
-      console.error('AR Scene Error:', e);
+    } catch (error) {
+      console.error('Error creating AR scene:', error);
+      this.showErrorAlert('Error al crear escena AR');
+    }
+  }
+
+  async showErrorAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message: message,
+      buttons: ['OK']
     });
-  </script>
-</body>
-</html>
-    `;
+    await alert.present();
+  }
+
+  ionViewWillLeave() {
+    // Limpiar la escena al salir
+    if (this.arContainer && this.arContainer.nativeElement) {
+      const container = this.arContainer.nativeElement;
+      container.innerHTML = '';
+    }
   }
 }
