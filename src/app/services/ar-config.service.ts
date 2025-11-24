@@ -48,17 +48,6 @@ export class ArConfigService {
         position: '0 0 0'
       }
     },
-    'kanji-sphere': {
-      type: 'marker',
-      preset: 'kanji',
-      content: {
-        type: 'primitive',
-        primitive: 'sphere',
-        color: '#EF2D5E',
-        scale: '0.5 0.5 0.5',
-        position: '0 0.5 0'
-      }
-    }
   };
 
   setCurrentTarget(targetKey: string) {
