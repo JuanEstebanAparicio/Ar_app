@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { Router } from '@angular/router';
 import { ArConfigService, ARTarget } from '../../services/ar-config.service';
 import { CameraPreview, CameraPreviewOptions } from '@capacitor-community/camera-preview';
-import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-ar-viewer',
@@ -18,8 +17,7 @@ export class ArViewerPage implements OnInit, OnDestroy {
 
   constructor(
     private arConfig: ArConfigService,
-    private router: Router,
-    private alertController: AlertController
+    private router: Router
   ) {}
 
   async ngOnInit() {
@@ -31,6 +29,7 @@ export class ArViewerPage implements OnInit, OnDestroy {
       return;
     }
 
+    // Iniciar cámara directamente (Android pedirá permisos automáticamente)
     await this.startCamera();
   }
 
@@ -50,16 +49,17 @@ export class ArViewerPage implements OnInit, OnDestroy {
       await CameraPreview.start(cameraPreviewOptions);
       this.cameraActive = true;
       
-      console.log('Camera started successfully');
+      console.log('✅ Camera started successfully');
       
       // Inicializar AR después de que la cámara esté activa
       setTimeout(() => {
         this.initAR();
-      }, 1000);
+      }, 500);
 
-    } catch (error) {
-      console.error('Error starting camera:', error);
-      await this.showErrorAlert('No se pudo iniciar la cámara. Verifica los permisos.');
+    } catch (error: any) {
+      console.error('❌ Error starting camera:', error);
+      
+      // Si hay error, volver al home sin mostrar alertas
       this.router.navigate(['/home']);
     }
   }
@@ -67,63 +67,96 @@ export class ArViewerPage implements OnInit, OnDestroy {
   initAR() {
     if (!this.target) return;
 
-    // Aquí puedes agregar la lógica de AR
-    // Por ahora, solo mostraremos un mensaje de que funciona
-    console.log('AR initialized with target:', this.target);
+    console.log('🎯 AR initialized with target:', this.target.preset);
     
-    // Dibujar algo simple en el canvas para probar
-    if (this.canvasRef) {
-      const canvas = this.canvasRef.nativeElement;
-      const ctx = canvas.getContext('2d');
-      
-      if (ctx) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        // Dibujar un cuadrado de prueba
-        ctx.fillStyle = 'rgba(76, 195, 217, 0.5)';
-        ctx.fillRect(
-          window.innerWidth / 2 - 50,
-          window.innerHeight / 2 - 50,
-          100,
-          100
-        );
-        
-        // Texto de prueba
-        ctx.fillStyle = 'white';
-        ctx.font = '20px Arial';
-        ctx.fillText('AR Activo - Apunta al marcador', 50, 50);
-      }
-    }
+    // Dibujar overlay AR en el canvas
+    setTimeout(() => {
+      this.drawAROverlay();
+    }, 100);
   }
 
-  async showErrorAlert(message: string) {
-    const alert = await this.alertController.create({
-      header: 'Error',
-      message: message,
-      buttons: ['OK']
-    });
-    await alert.present();
+  drawAROverlay() {
+    if (!this.canvasRef) return;
+
+    const canvas = this.canvasRef.nativeElement;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Limpiar canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dibujar marco de escaneo
+    ctx.strokeStyle = '#4CC3D9';
+    ctx.lineWidth = 3;
+    const boxSize = 250;
+    const x = (canvas.width - boxSize) / 2;
+    const y = (canvas.height - boxSize) / 2;
+    ctx.strokeRect(x, y, boxSize, boxSize);
+
+    // Dibujar esquinas
+    const cornerLength = 30;
+    ctx.strokeStyle = '#00FF00';
+    ctx.lineWidth = 5;
+
+    // Esquina superior izquierda
+    ctx.beginPath();
+    ctx.moveTo(x, y + cornerLength);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + cornerLength, y);
+    ctx.stroke();
+
+    // Esquina superior derecha
+    ctx.beginPath();
+    ctx.moveTo(x + boxSize - cornerLength, y);
+    ctx.lineTo(x + boxSize, y);
+    ctx.lineTo(x + boxSize, y + cornerLength);
+    ctx.stroke();
+
+    // Esquina inferior izquierda
+    ctx.beginPath();
+    ctx.moveTo(x, y + boxSize - cornerLength);
+    ctx.lineTo(x, y + boxSize);
+    ctx.lineTo(x + cornerLength, y + boxSize);
+    ctx.stroke();
+
+    // Esquina inferior derecha
+    ctx.beginPath();
+    ctx.moveTo(x + boxSize - cornerLength, y + boxSize);
+    ctx.lineTo(x + boxSize, y + boxSize);
+    ctx.lineTo(x + boxSize, y + boxSize - cornerLength);
+    ctx.stroke();
+
+    // Texto de instrucciones
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Apunta al marcador ' + (this.target?.preset?.toUpperCase() || 'AR'), canvas.width / 2, y - 30);
+
+    // Información del target
+    ctx.font = '14px Arial';
+    ctx.fillText('Marcador: ' + (this.target?.preset || 'custom'), canvas.width / 2, canvas.height - 30);
   }
 
   async ngOnDestroy() {
-    if (this.cameraActive) {
-      try {
-        await CameraPreview.stop();
-        this.cameraActive = false;
-      } catch (error) {
-        console.error('Error stopping camera:', error);
-      }
-    }
+    await this.stopCamera();
   }
 
   async ionViewWillLeave() {
+    await this.stopCamera();
+  }
+
+  private async stopCamera() {
     if (this.cameraActive) {
       try {
         await CameraPreview.stop();
         this.cameraActive = false;
+        console.log('✅ Camera stopped');
       } catch (error) {
-        console.error('Error stopping camera:', error);
+        console.error('❌ Error stopping camera:', error);
       }
     }
   }
