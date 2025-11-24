@@ -34,35 +34,34 @@ export class ArViewerPage implements OnInit, OnDestroy {
   }
 
   async startCamera() {
-    try {
-      const cameraPreviewOptions: CameraPreviewOptions = {
-        position: 'rear',
-        parent: 'camera-preview',
-        className: 'camera-preview',
-        toBack: true,
-        enableZoom: false,
-        enableHighResolution: true,
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
+  try {
+    const cameraPreviewOptions: CameraPreviewOptions = {
+      position: 'rear',
+      parent: 'camera-preview',
+      className: 'camera-preview',
+      toBack: false,  // ✅ CAMBIAR A FALSE
+      enableZoom: false,
+      enableHighResolution: true,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      x: 0,
+      y: 0
+    };
 
-      await CameraPreview.start(cameraPreviewOptions);
-      this.cameraActive = true;
-      
-      console.log('✅ Camera started successfully');
-      
-      // Inicializar AR después de que la cámara esté activa
-      setTimeout(() => {
-        this.initAR();
-      }, 500);
+    await CameraPreview.start(cameraPreviewOptions);
+    this.cameraActive = true;
+    
+    console.log('✅ Camera started successfully');
+    
+    setTimeout(() => {
+      this.initAR();
+    }, 500);
 
-    } catch (error: any) {
-      console.error('❌ Error starting camera:', error);
-      
-      // Si hay error, volver al home sin mostrar alertas
-      this.router.navigate(['/home']);
-    }
+  } catch (error: any) {
+    console.error('❌ Error starting camera:', error);
+    this.router.navigate(['/home']);
   }
+}
 
   initAR() {
     if (!this.target) return;
@@ -76,70 +75,77 @@ export class ArViewerPage implements OnInit, OnDestroy {
   }
 
   drawAROverlay() {
-    if (!this.canvasRef) return;
+  if (!this.canvasRef) return;
 
-    const canvas = this.canvasRef.nativeElement;
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) return;
+  const canvas = this.canvasRef.nativeElement;
+  const ctx = canvas.getContext('2d', { alpha: true }); // ✅ Habilitar transparencia
+  
+  if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-    // Limpiar canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // ✅ NO limpiar con fondo negro, dejar transparente
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar marco de escaneo
-    ctx.strokeStyle = '#4CC3D9';
-    ctx.lineWidth = 3;
-    const boxSize = 250;
-    const x = (canvas.width - boxSize) / 2;
-    const y = (canvas.height - boxSize) / 2;
-    ctx.strokeRect(x, y, boxSize, boxSize);
+  // Dibujar marco de escaneo
+  ctx.strokeStyle = '#00D9FF';
+  ctx.lineWidth = 3;
+  const boxSize = 250;
+  const x = (canvas.width - boxSize) / 2;
+  const y = (canvas.height - boxSize) / 2;
+  ctx.strokeRect(x, y, boxSize, boxSize);
 
-    // Dibujar esquinas
-    const cornerLength = 30;
-    ctx.strokeStyle = '#00FF00';
-    ctx.lineWidth = 5;
+  // Dibujar esquinas
+  const cornerLength = 30;
+  ctx.strokeStyle = '#00FF00';
+  ctx.lineWidth = 5;
 
-    // Esquina superior izquierda
-    ctx.beginPath();
-    ctx.moveTo(x, y + cornerLength);
-    ctx.lineTo(x, y);
-    ctx.lineTo(x + cornerLength, y);
-    ctx.stroke();
+  // Esquina superior izquierda
+  ctx.beginPath();
+  ctx.moveTo(x, y + cornerLength);
+  ctx.lineTo(x, y);
+  ctx.lineTo(x + cornerLength, y);
+  ctx.stroke();
 
-    // Esquina superior derecha
-    ctx.beginPath();
-    ctx.moveTo(x + boxSize - cornerLength, y);
-    ctx.lineTo(x + boxSize, y);
-    ctx.lineTo(x + boxSize, y + cornerLength);
-    ctx.stroke();
+  // Esquina superior derecha
+  ctx.beginPath();
+  ctx.moveTo(x + boxSize - cornerLength, y);
+  ctx.lineTo(x + boxSize, y);
+  ctx.lineTo(x + boxSize, y + cornerLength);
+  ctx.stroke();
 
-    // Esquina inferior izquierda
-    ctx.beginPath();
-    ctx.moveTo(x, y + boxSize - cornerLength);
-    ctx.lineTo(x, y + boxSize);
-    ctx.lineTo(x + cornerLength, y + boxSize);
-    ctx.stroke();
+  // Esquina inferior izquierda
+  ctx.beginPath();
+  ctx.moveTo(x, y + boxSize - cornerLength);
+  ctx.lineTo(x, y + boxSize);
+  ctx.lineTo(x + cornerLength, y + boxSize);
+  ctx.stroke();
 
-    // Esquina inferior derecha
-    ctx.beginPath();
-    ctx.moveTo(x + boxSize - cornerLength, y + boxSize);
-    ctx.lineTo(x + boxSize, y + boxSize);
-    ctx.lineTo(x + boxSize, y + boxSize - cornerLength);
-    ctx.stroke();
+  // Esquina inferior derecha
+  ctx.beginPath();
+  ctx.moveTo(x + boxSize - cornerLength, y + boxSize);
+  ctx.lineTo(x + boxSize, y + boxSize);
+  ctx.lineTo(x + boxSize, y + boxSize - cornerLength);
+  ctx.stroke();
 
-    // Texto de instrucciones
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 18px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Apunta al marcador ' + (this.target?.preset?.toUpperCase() || 'AR'), canvas.width / 2, y - 30);
+  // Texto con fondo semi-transparente para mejor legibilidad
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(0, y - 60, canvas.width, 50);
+  
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Apunta al marcador ' + (this.target?.preset?.toUpperCase() || 'AR'), canvas.width / 2, y - 30);
 
-    // Información del target
-    ctx.font = '14px Arial';
-    ctx.fillText('Marcador: ' + (this.target?.preset || 'custom'), canvas.width / 2, canvas.height - 30);
-  }
+  // Información del target con fondo
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+  
+  ctx.fillStyle = 'white';
+  ctx.font = '14px Arial';
+  ctx.fillText('Marcador: ' + (this.target?.preset || 'custom'), canvas.width / 2, canvas.height - 25);
+}
 
   async ngOnDestroy() {
     await this.stopCamera();
