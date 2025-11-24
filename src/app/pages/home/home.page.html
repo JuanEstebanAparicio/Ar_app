@@ -1,20 +1,45 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>AR.js Taller</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <div class="container">
+    <h1>Realidad Aumentada</h1>
+    <p>Escanea un marcador HIRO para ver contenido AR</p>
+    
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Instrucciones</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ol>
+          <li>Presiona el botón "Iniciar AR"</li>
+          <li>Permite el acceso a la cámara</li>
+          <li>Apunta a un marcador HIRO</li>
+          <li>Observa el modelo 3D aparecer</li>
+        </ol>
+      </ion-card-content>
+    </ion-card>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+    <ion-button expand="block" (click)="openAR()" size="large">
+      <ion-icon slot="start" name="scan"></ion-icon>
+      Iniciar AR
+    </ion-button>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Marcador HIRO</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Descarga e imprime este marcador:</p>
+        <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank">
+          <ion-button fill="outline" size="small">
+            Descargar Marcador
+          </ion-button>
+        </a>
+      </ion-card-content>
+    </ion-card>
   </div>
 </ion-content>

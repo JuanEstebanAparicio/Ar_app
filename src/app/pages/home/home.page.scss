@@ -1,27 +1,19 @@
-#container {
-  text-align: center;
+.container {
+  max-width: 600px;
+  margin: 0 auto;
 
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
+  h1 {
+    text-align: center;
+    margin: 2rem 0;
+  }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
+  p {
+    text-align: center;
+    color: var(--ion-color-medium);
+    margin-bottom: 2rem;
+  }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+  ion-button {
+    margin: 2rem 0;
+  }
 }
