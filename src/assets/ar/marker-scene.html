@@ -9,19 +9,74 @@
   <style>
     body { margin: 0; overflow: hidden; }
     .arjs-loader {
-      height: 100%; width: 100%; position: absolute;
-      top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8);
-      z-index: 9999; display: flex;
-      justify-content: center; align-items: center;
+      height: 100%; 
+      width: 100%; 
+      position: absolute;
+      top: 0; 
+      left: 0; 
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 9999; 
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+      flex-direction: column;
     }
     .arjs-loader div {
-      text-align: center; font-size: 1.25em; color: white;
+      text-align: center; 
+      font-size: 1.25em; 
+      color: white;
+      margin: 10px;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .marker-found {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 255, 0, 0.9);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      display: none;
+      z-index: 999;
+      animation: pulse 1s infinite;
+      box-shadow: 0 4px 15px rgba(0, 255, 0, 0.5);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.05); }
+    }
+    .marker-info {
+      font-size: 0.9em; 
+      color: #4CC3D9;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
+  <!-- Loader con spinner -->
   <div class="arjs-loader">
-    <div>Cargando AR...</div>
+    <div class="spinner"></div>
+    <div>Iniciando AR...</div>
+    <div id="marker-name" class="marker-info"></div>
+  </div>
+  
+  <!-- Indicador de marcador detectado -->
+  <div id="marker-found-indicator" class="marker-found">
+    ✓ Marcador Detectado
   </div>
   
   <a-scene
@@ -29,30 +84,61 @@
     arjs="sourceType: webcam; debugUIEnabled: false;"
     vr-mode-ui="enabled: false">
     
-    <!-- Marcador HIRO con cubo -->
-    <a-marker id="marker-hiro" preset="hiro">
+    <!-- HIRO - Cubo Animado -->
+    <a-marker id="marker-hiro-box" preset="hiro" data-name="HIRO Cubo">
       <a-box 
         position="0 0.5 0" 
-        material="color: #4CC3D9;" 
+        material="color: #4CC3D9; metalness: 0.5;" 
         rotation="0 45 0"
-        animation="property: rotation; to: 0 405 0; loop: true; dur: 10000; easing: linear">
+        animation="property: rotation; to: 0 405 0; loop: true; dur: 10000; easing: linear"
+        animation__2="property: position; to: 0 1 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutQuad">
       </a-box>
+      <a-text 
+        value="AR.js Taller" 
+        position="0 1.5 0" 
+        align="center" 
+        color="#FFFFFF"
+        scale="2 2 2">
+      </a-text>
     </a-marker>
     
-    <!-- Marcador KANJI con esfera -->
-    <a-marker id="marker-kanji" preset="kanji">
-      <a-sphere 
-        position="0 0.5 0" 
-        radius="0.5" 
-        color="#EF2D5E"
-        animation="property: scale; to: 1.5 1.5 1.5; dir: alternate; dur: 1500; loop: true">
-      </a-sphere>
+    <!-- HIRO - Modelo T-Rex -->
+    <a-marker id="marker-hiro-model" preset="hiro" data-name="HIRO T-Rex">
+      <a-entity
+        gltf-model="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"
+        scale="0.5 0.5 0.5"
+        position="0 0 0"
+        rotation="0 0 0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
+      </a-entity>
+      <a-text 
+        value="T-Rex" 
+        position="0 2 0" 
+        align="center" 
+        color="#00FF00"
+        scale="3 3 3">
+      </a-text>
     </a-marker>
     
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
+    // Obtener parámetro de marcador desde URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedTarget = urlParams.get('marker') || 'hiro-box';
+    
+    console.log('🎯 Target seleccionado:', selectedTarget);
+    
+    // Mostrar nombre del marcador en loader
+    const markerNames = {
+      'hiro-box': 'HIRO - Cubo Animado',
+      'hiro-model': 'HIRO - T-Rex 3D'
+    };
+    
+    document.getElementById('marker-name').textContent = 
+      'Esperando: ' + (markerNames[selectedTarget] || selectedTarget.toUpperCase());
+    
     // Ocultar loader cuando cargue
     window.addEventListener('load', function() {
       setTimeout(() => {
@@ -61,21 +147,47 @@
       }, 2000);
     });
 
-    // Obtener parámetro de marcador desde URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedMarker = urlParams.get('marker') || 'hiro';
-    
-    // Mostrar solo el marcador seleccionado
+    // Activar solo el marcador seleccionado y agregar eventos
     document.addEventListener('DOMContentLoaded', function() {
-      const markers = ['hiro', 'kanji'];
-      markers.forEach(marker => {
-        const element = document.getElementById('marker-' + marker);
-        if (element && marker !== selectedMarker) {
-          element.remove();
+      const allMarkers = document.querySelectorAll('a-marker');
+      
+      allMarkers.forEach(marker => {
+        const markerId = marker.id.replace('marker-', '');
+        
+        if (markerId !== selectedTarget) {
+          // Remover marcadores no seleccionados
+          marker.remove();
+        } else {
+          console.log('✅ Marcador activo:', markerId);
+          
+          // Evento cuando se encuentra el marcador
+          marker.addEventListener('markerFound', function() {
+            console.log('🎯 ¡Marcador encontrado!');
+            const indicator = document.getElementById('marker-found-indicator');
+            if (indicator) {
+              indicator.style.display = 'block';
+            }
+            
+            // Vibración en dispositivos móviles
+            if (navigator.vibrate) {
+              navigator.vibrate(200);
+            }
+            
+            // Opcional: reproducir sonido
+            // const audio = new Audio('success.mp3');
+            // audio.play();
+          });
+          
+          // Evento cuando se pierde el marcador
+          marker.addEventListener('markerLost', function() {
+            console.log('❌ Marcador perdido');
+            const indicator = document.getElementById('marker-found-indicator');
+            if (indicator) {
+              indicator.style.display = 'none';
+            }
+          });
         }
       });
-      
-      console.log('Marcador activo:', selectedMarker);
     });
   </script>
 </body>
