@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 
 export interface ARTarget {
   type: 'marker' | 'image' | 'location';
-  preset?: string; // 'hiro', 'kanji', etc
-  url?: string; // Para image tracking
+  preset?: string;
+  url?: string;
   content: ARContent;
 }
 
@@ -20,11 +20,9 @@ export interface ARContent {
 @Injectable({
   providedIn: 'root',
 })
-
 export class ArConfigService {
   private currentTarget: ARTarget | null = null;
 
-  // Configuraciones predefinidas
   private targets: { [key: string]: ARTarget } = {
     'hiro-box': {
       type: 'marker',
@@ -44,10 +42,10 @@ export class ArConfigService {
       content: {
         type: '3d-model',
         src: 'https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf',
-        scale: '0.05 0.05 0.05',
+        scale: '0.5 0.5 0.5',
         position: '0 0 0'
       }
-    },
+    }
   };
 
   setCurrentTarget(targetKey: string) {
