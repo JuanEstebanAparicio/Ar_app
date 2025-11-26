@@ -85,42 +85,6 @@
     </ion-card>
 
 
-    <!-- ============================================
-         NUEVO: CARD – Heroes Personalizados
-         ============================================ -->
-    <ion-card *ngIf="!loadingHeroes; else loadingTpl">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="person-circle-outline"></ion-icon>
-          Heroes Personalizados
-        </ion-card-title>
-      </ion-card-header>
-
-      <ion-card-content>
-        <ion-list>
-          <ion-radio-group [(ngModel)]="selectedHeroId">
-
-            <ion-item *ngFor="let hero of heroes"
-                      lines="full"
-                      [class.selected]="selectedHeroId === hero.id">
-
-              <ion-thumbnail slot="start">
-                <img [src]="hero.img" [alt]="hero.label">
-              </ion-thumbnail>
-
-              <ion-label>
-                <h2>{{ hero.label }}</h2>
-                <p>ID: {{ hero.id }}</p>
-              </ion-label>
-
-              <ion-radio slot="end" [value]="hero.id"></ion-radio>
-            </ion-item>
-
-          </ion-radio-group>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
     <!-- Loading Template -->
     <ng-template #loadingTpl>
       <ion-card>
@@ -131,17 +95,7 @@
       </ion-card>
     </ng-template>
 
-    <!-- Vista previa del hero seleccionado -->
-    <ion-card *ngIf="getSelectedHeroImg()">
-      <ion-card-header>
-        <ion-card-title>Vista previa</ion-card-title>
-      </ion-card-header>
-      <ion-card-content style="text-align:center">
-        <img [src]="getSelectedHeroImg()"
-             alt="Preview"
-             style="max-width:220px; width:80%; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1)">
-      </ion-card-content>
-    </ion-card>
+
 
 
     <!-- BOTÓN INICIAR AR -->
