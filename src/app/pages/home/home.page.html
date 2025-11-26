@@ -79,6 +79,23 @@
               <ion-radio slot="end" value="hiro-square"></ion-radio>
             </ion-item>
 
+            <!-- PAN - Cuadrado con patrón personalizado -->
+            <ion-item lines="full" [class.selected]="selectedTarget === 'pan-square'">
+              <ion-thumbnail slot="start">
+                <img src="assets/ar/markers/pattern-pan.png">
+              </ion-thumbnail>
+
+              <ion-label>
+                <h2>
+                  <ion-icon name="image" color="tertiary"></ion-icon>
+                  PAN - Cuadrado con patrón personalizado
+                </h2>
+                <p>Plano 2D sobre tu propio patrón</p>
+              </ion-label>
+
+              <ion-radio slot="end" value="pan-square"></ion-radio>
+            </ion-item>
+
           </ion-radio-group>
         </ion-list>
       </ion-card-content>
