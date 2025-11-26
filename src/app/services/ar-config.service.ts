@@ -19,6 +19,7 @@ export class ArConfigService {
   private experienceMap: Record<string, { marker: string }> = {
     'hiro-box':   { marker: 'marker-hiro' },
     'hiro-model': { marker: 'marker-hiro-model' },
+    "hiro-square":    { marker: "marker-hiro-square" },
     'kanji':      { marker: 'marker-kanji' }
   };
 

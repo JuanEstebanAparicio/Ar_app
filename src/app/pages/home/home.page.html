@@ -53,6 +53,24 @@
               </ion-label>
               <ion-radio slot="end" value="hiro-model"></ion-radio>
             </ion-item>
+
+            <!-- HIRO - Cuadrado Estático -->
+            <ion-item lines="full" [class.selected]="selectedTarget === 'hiro-square'">
+              <ion-thumbnail slot="start">
+                <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png">
+              </ion-thumbnail>
+
+              <ion-label>
+                <h2>
+                  <ion-icon name="stop-outline" color="medium"></ion-icon>
+                  HIRO - Cuadrado Estático
+                </h2>
+                <p>Un plano 2D simple sobre el marcador</p>
+              </ion-label>
+
+              <ion-radio slot="end" value="hiro-square"></ion-radio>
+            </ion-item>
+
             
           </ion-radio-group>
         </ion-list>
