@@ -91,6 +91,26 @@
         </a-plane>
       </a-marker>
 
+      <!-- PAN - Patrón personalizado -->
+      <a-marker
+        id="marker-pan"
+        type="pattern"
+        url="markers/pattern-pan.patt"
+        smooth="true"
+        smoothCount="10"
+        smoothTolerance="0.01"
+        smoothThreshold="5">
+
+        <a-plane
+          position="0 0.01 0"
+          rotation="-90 0 0"
+          width="1"
+          height="1"
+          color="#FFC107"> <!-- color distintivo -->
+        </a-plane>
+
+      </a-marker>
+
     <!-- KANJI -->
     <a-marker id="marker-kanji" preset="kanji">
       <a-sphere color="#EF2D5E" radius="0.5" position="0 0.5 0"
@@ -112,7 +132,13 @@
     const selectedMarker = urlParams.get('marker');
 
     /* Ocultar marcadores no seleccionados */
-    const markers = ["marker-hiro", "marker-hiro-model", "marker-kanji"];
+    const markers = [
+    "marker-hiro",
+    "marker-hiro-model",
+    "marker-hiro-square",
+    "marker-kanji",
+    "marker-pan"
+];
 
     markers.forEach(id => {
       if (id !== selectedMarker) {
