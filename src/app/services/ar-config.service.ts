@@ -1,53 +1,56 @@
-// src/app/services/ar-config.service.ts
+// -----------------------------
+// FILE: src/app/services/ar-config.service.ts
+// Reemplaza o añade este servicio (carga manifest y expone heroes).
+// -----------------------------
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+export interface HeroEntry {
+  id: string;
+  label: string;
+  img: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ArConfigService {
+  private manifestPath = 'assets/ar/manifest.json';
+  private heroes: HeroEntry[] = [];
 
-  /** 
-   * Guarda la experiencia actual seleccionada (hiro-box, hiro-model, etc.)
-   * Se mantiene EXACTAMENTE igual que tu código original.
-   */
+  constructor(private http: HttpClient) {}
+
+  // Carga el manifest y guarda heroes; devuelve la lista
+  async loadManifest(): Promise<HeroEntry[]> {
+    if (this.heroes.length) return this.heroes;
+    try {
+      const res: any = await this.http.get(this.manifestPath).toPromise();
+      this.heroes = res?.heroes || [];
+      return this.heroes;
+    } catch (err) {
+      console.error('Error loading AR manifest', err);
+      this.heroes = [];
+      return this.heroes;
+    }
+  }
+
+  getHeroes(): HeroEntry[] {
+    return this.heroes;
+  }
+
+  // Mantén tus métodos originales (compatibilidad)
   private currentTarget: string | null = null;
+  setCurrentTarget(target: string) { this.currentTarget = target; }
+  getCurrentTarget() { return this.currentTarget; }
 
-  /**
-   * NUEVO: Mapa centralizado de experiencias → marcadores reales en marker-scene.html
-   * NO rompe tu código existente.
-   */
+  // Mapa simple existente (no lo toco)
   private experienceMap: Record<string, { marker: string }> = {
     'hiro-box':   { marker: 'marker-hiro' },
     'hiro-model': { marker: 'marker-hiro-model' },
-    "hiro-square":    { marker: "marker-hiro-square" },
+    'hiro-square':{ marker: 'marker-hiro-square' },
     'kanji':      { marker: 'marker-kanji' }
   };
 
-  constructor() {}
-
-  /**
-   * Guarda qué experiencia escogió el usuario.
-   * (Tu función ORIGINAL)
-   */
-  setCurrentTarget(target: string) {
-    this.currentTarget = target;
-  }
-
-  /**
-   * Retorna la experiencia actual.
-   * (Tu función ORIGINAL)
-   */
-  getCurrentTarget() {
-    return this.currentTarget;
-  }
-
-  /**
-   * NUEVO: Devuelve el marker-id REAL que se debe activar en marker-scene.html
-   * Ejemplo:
-   *   "hiro-model" → "marker-hiro-model"
-   *   "hiro-box"   → "marker-hiro"
-   *   "kanji"      → "marker-kanji"
-   */
   getMarkerIdFor(target: string): string {
     return this.experienceMap[target]?.marker || 'marker-hiro';
   }
