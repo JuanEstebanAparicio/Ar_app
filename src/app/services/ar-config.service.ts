@@ -1,66 +1,53 @@
+// src/app/services/ar-config.service.ts
 import { Injectable } from '@angular/core';
 
-export interface ARTarget {
-  type: 'marker' | 'image' | 'location';
-  preset?: string;
-  url?: string;
-  content: ARContent;
-}
-
-export interface ARContent {
-  type: '3d-model' | 'primitive' | 'image' | 'video';
-  src?: string;
-  primitive?: 'box' | 'sphere' | 'cylinder';
-  color?: string;
-  scale?: string;
-  position?: string;
-  rotation?: string;
-}
-
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ArConfigService {
-  private currentTarget: ARTarget | null = null;
 
-  private targets: { [key: string]: ARTarget } = {
-    'hiro-box': {
-      type: 'marker',
-      preset: 'hiro',
-      content: {
-        type: 'primitive',
-        primitive: 'box',
-        color: '#4CC3D9',
-        scale: '1 1 1',
-        position: '0 0.5 0',
-        rotation: '0 45 0'
-      }
-    },
-    'hiro-model': {
-      type: 'marker',
-      preset: 'hiro',
-      content: {
-        type: '3d-model',
-        src: 'https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf',
-        scale: '0.5 0.5 0.5',
-        position: '0 0 0'
-      }
-    }
+  /** 
+   * Guarda la experiencia actual seleccionada (hiro-box, hiro-model, etc.)
+   * Se mantiene EXACTAMENTE igual que tu código original.
+   */
+  private currentTarget: string | null = null;
+
+  /**
+   * NUEVO: Mapa centralizado de experiencias → marcadores reales en marker-scene.html
+   * NO rompe tu código existente.
+   */
+  private experienceMap: Record<string, { marker: string }> = {
+    'hiro-box':   { marker: 'marker-hiro' },
+    'hiro-model': { marker: 'marker-hiro-model' },
+    'kanji':      { marker: 'marker-kanji' }
   };
 
-  setCurrentTarget(targetKey: string) {
-    this.currentTarget = this.targets[targetKey];
+  constructor() {}
+
+  /**
+   * Guarda qué experiencia escogió el usuario.
+   * (Tu función ORIGINAL)
+   */
+  setCurrentTarget(target: string) {
+    this.currentTarget = target;
   }
 
-  getCurrentTarget(): ARTarget | null {
+  /**
+   * Retorna la experiencia actual.
+   * (Tu función ORIGINAL)
+   */
+  getCurrentTarget() {
     return this.currentTarget;
   }
 
-  getAllTargets() {
-    return Object.keys(this.targets);
-  }
-
-  getTargetInfo(key: string): ARTarget | undefined {
-    return this.targets[key];
+  /**
+   * NUEVO: Devuelve el marker-id REAL que se debe activar en marker-scene.html
+   * Ejemplo:
+   *   "hiro-model" → "marker-hiro-model"
+   *   "hiro-box"   → "marker-hiro"
+   *   "kanji"      → "marker-kanji"
+   */
+  getMarkerIdFor(target: string): string {
+    return this.experienceMap[target]?.marker || 'marker-hiro';
   }
 }

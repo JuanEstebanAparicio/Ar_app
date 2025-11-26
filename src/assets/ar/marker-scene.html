@@ -1,93 +1,131 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AR Scene</title>
+
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+
   <style>
     body { margin: 0; overflow: hidden; }
+
+    /* Loader */
     .arjs-loader {
-      height: 100%; width: 100%; position: absolute;
-      top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8);
-      z-index: 9999; display: flex;
-      justify-content: center; align-items: center;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      background: rgba(0, 0, 0, .85);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 22px;
     }
-    .arjs-loader div {
-      text-align: center; font-size: 1.25em; color: white;
+
+    /* HUD Overlay */
+    #hud {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      padding: 12px;
+      color: white;
+      font-family: sans-serif;
+      z-index: 99999;
+      pointer-events: none;
+    }
+
+    #status {
+      background: rgba(0,0,0,0.5);
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: inline-block;
     }
   </style>
 </head>
+
 <body>
-  <div class="arjs-loader">
-    <div>Cargando AR...</div>
+
+  <!-- Loader -->
+  <div class="arjs-loader" id="loader">Cargando AR...</div>
+
+  <!-- HUD overlay -->
+  <div id="hud">
+    <div id="status">Buscando marcador…</div>
   </div>
-  
-  <a-scene
-    embedded
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    vr-mode-ui="enabled: false">
-    
-    <!-- Marcador HIRO con cubo -->
+
+  <a-scene embedded vr-mode-ui="enabled:false"
+    arjs="sourceType: webcam; debugUIEnabled: false;">
+
+    <!-- HIRO - Cubo -->
     <a-marker id="marker-hiro" preset="hiro">
-      <a-box 
-        position="0 0.5 0" 
-        material="color: #4CC3D9;" 
+      <a-box position="0 0.5 0"
+        material="color: #4CC3D9"
         rotation="0 45 0"
-        animation="property: rotation; to: 0 405 0; loop: true; dur: 10000; easing: linear">
+        animation="property: rotation; to: 0 405 0; loop: true; dur: 7000; easing: linear">
       </a-box>
     </a-marker>
 
-    <!-- Marcador HIRO con T-Rex -->
+    <!-- HIRO - Modelo TRex -->
     <a-marker id="marker-hiro-model" preset="hiro">
-    <a-entity
-      gltf-model="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"
-      scale="0.5 0.5 0.5"
-      position="0 0 0"
-      rotation="0 0 0"
-      animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
-    </a-entity>
-  </a-marker>
-    
-    <!-- Marcador KANJI con esfera -->
+      <a-entity id="trex"
+        gltf-model="https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"
+        scale="0.4 0.4 0.4"
+        rotation="0 0 0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear">
+      </a-entity>
+    </a-marker>
+
+    <!-- KANJI -->
     <a-marker id="marker-kanji" preset="kanji">
-      <a-sphere 
-        position="0 0.5 0" 
-        radius="0.5" 
-        color="#EF2D5E"
-        animation="property: scale; to: 1.5 1.5 1.5; dir: alternate; dur: 1500; loop: true">
+      <a-sphere color="#EF2D5E" radius="0.5" position="0 0.5 0"
+        animation="property: scale; to: 1.3 1.3 1.3; dir: alternate; dur: 1500; loop: true">
       </a-sphere>
     </a-marker>
-    
+
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
-    // Ocultar loader cuando cargue
-    window.addEventListener('load', function() {
-      setTimeout(() => {
-        const loader = document.querySelector('.arjs-loader');
-        if (loader) loader.style.display = 'none';
-      }, 2000);
+    /* Oculta loader */
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById("loader").style.display = "none", 1000);
     });
 
-    // Obtener parámetro de marcador desde URL
+    /* Obtener marker seleccionado */
     const urlParams = new URLSearchParams(window.location.search);
-    const selectedMarker = urlParams.get('marker') || 'hiro';
-    
-    // Mostrar solo el marcador seleccionado
-    document.addEventListener('DOMContentLoaded', function() {
-      const markers = ['hiro', 'kanji'];
-      markers.forEach(marker => {
-        const element = document.getElementById('marker-' + marker);
-        if (element && marker !== selectedMarker) {
-          element.remove();
-        }
-      });
-      
-      console.log('Marcador activo:', selectedMarker);
+    const selectedMarker = urlParams.get('marker');
+
+    /* Ocultar marcadores no seleccionados */
+    const markers = ["marker-hiro", "marker-hiro-model", "marker-kanji"];
+
+    markers.forEach(id => {
+      if (id !== selectedMarker) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      }
     });
+
+    console.log("Marker activo:", selectedMarker);
+
+    /* Eventos de tracking */
+    const activeMarker = document.getElementById(selectedMarker);
+    const status = document.getElementById("status");
+
+    if (activeMarker) {
+      activeMarker.addEventListener("markerFound", () => {
+        status.innerHTML = "Marcador detectado ✔️";
+      });
+
+      activeMarker.addEventListener("markerLost", () => {
+        status.innerHTML = "Buscando marcador…";
+      });
+    }
   </script>
+
 </body>
 </html>

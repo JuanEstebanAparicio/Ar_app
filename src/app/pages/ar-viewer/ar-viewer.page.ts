@@ -18,21 +18,21 @@ export class ArViewerPage implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit() {
-    const target = this.arConfig.getCurrentTarget();
-    
-    if (!target) {
-      console.error('No AR target selected');
-      this.router.navigate(['/home']);
-      return;
-    }
+ngOnInit() {
+  const target = this.arConfig.getCurrentTarget();
 
-    // Crear URL con parámetro del marcador
-    const markerParam = target.preset || 'hiro';
-    const url = `assets/ar/marker-scene.html?marker=${markerParam}`;
-    
-    this.arSceneUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    
-    console.log('Loading AR scene for marker:', markerParam);
+  if (!target) {
+    this.router.navigate(['/home']);
+    return;
   }
+
+  const markerId = this.arConfig.getMarkerIdFor(target);
+
+  const url = `assets/ar/marker-scene.html?marker=${markerId}`;
+
+  this.arSceneUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+
+  console.log("Loading AR with marker:", markerId);
+}
+
 }
