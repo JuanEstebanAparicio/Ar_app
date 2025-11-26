@@ -1,0 +1,8 @@
+
+{
+  "heroes": [
+    { "id": "raiden", "label": "Raiden", "img": "assets/ar/heroes/raiden.png" },
+    { "id": "pancakes", "label": "Pancakes", "img": "assets/ar/heroes/pancakes.png" },
+    { "id": "bread", "label": "Bread", "img": "assets/ar/heroes/bread.png" }
+  ]
+}
