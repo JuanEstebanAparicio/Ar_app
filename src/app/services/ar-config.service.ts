@@ -48,8 +48,8 @@ export class ArConfigService {
     'hiro-box':   { marker: 'marker-hiro' },
     'hiro-model': { marker: 'marker-hiro-model' },
     'hiro-square':{ marker: 'marker-hiro-square' },
-    'pan-square':     { marker: 'marker-pan' },
-    'kanji':      { marker: 'marker-kanji' }
+    'pan-square': { marker: 'marker-pan' },
+    'alien-model': { marker: 'marker-alien' }
   };
 
   getMarkerIdFor(target: string): string {

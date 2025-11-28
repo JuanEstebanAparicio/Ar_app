@@ -96,6 +96,25 @@
               <ion-radio slot="end" value="pan-square"></ion-radio>
             </ion-item>
 
+            <!-- ALIEN - Swampfire -->
+            <ion-item lines="full" [class.selected]="selectedTarget === 'alien-swampfire'">
+              <ion-thumbnail slot="start">
+                <img src="assets/models/swampfire-preview.png">
+              </ion-thumbnail>
+
+              <ion-label>
+                <h2>
+                  <ion-icon name="flame" color="danger"></ion-icon>
+                  Alien - Swampfire 3D
+                </h2>
+                <p>Modelo 3D animado del alien Swampfire</p>
+                <ion-badge color="danger">Nuevo</ion-badge>
+              </ion-label>
+
+              <ion-radio slot="end" value="alien-swampfire"></ion-radio>
+            </ion-item>
+
+
           </ion-radio-group>
         </ion-list>
       </ion-card-content>
