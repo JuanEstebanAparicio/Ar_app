@@ -1,0 +1,11 @@
+Model Information:
+* title:	Ben 10 Alien Force Chromastone
+* source:	https://sketchfab.com/3d-models/ben-10-alien-force-chromastone-d86e96899fc44ada9f173ae98f2999fb
+* author:	alnmathew (https://sketchfab.com/alnmathew)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Ben 10 Alien Force Chromastone" (https://sketchfab.com/3d-models/ben-10-alien-force-chromastone-d86e96899fc44ada9f173ae98f2999fb) by alnmathew (https://sketchfab.com/alnmathew) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
